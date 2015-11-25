@@ -6,6 +6,8 @@ import os
 import pickle
 import random
 from _thread import *
+import threading
+import sys
 import Simple_FTP_receiver
 import Simple_FTP_sender
 #test
@@ -162,7 +164,12 @@ def get_user_input(strr, i):
         data = pickle.dumps("EXIT")
         #s.send(bytes('1', "utf-8"))
         s.send(data)
+        #stopped = threading.Event()
+        #time.sleep(3)
+        #threading.Timer(1, stopped.set).start()
         s.close                     # Close the socket when done
+        #sys.exit()
+        os._exit(1)
     elif user_input == "ADD":
         user_input_rfc_number = input("> Enter the RFC Number: ")
         user_input_rfc_title = input("> Enter the RFC Title: ")
@@ -214,22 +221,23 @@ start_new_thread(get_user_input, ("hello", 1))
 while True:
     data_p2p, addr = upload_socket.recvfrom(1024)
     data_p2p = pickle.loads(data_p2p)
-    #print(data_p2p)
-    try:
+    #print(data_p2p[0])
+    if data_p2p[0] == "G": #GET MSG
         indexP = data_p2p.index('P')
         indexC = data_p2p.index('C')
         rfc_num = data_p2p[indexC+1:indexP-1]
         message = p2p_response_message(rfc_num)
         filename = get_filename(rfc_num)
-        print("FILENAME: ", filename)
+        #print("FILENAME: ", filename)
         upload_socket.sendto(pickle.dumps(message[0]),(addr))
         #print("SENDER ADDRESS:", addr[0])
         Simple_FTP_sender.rdt_send(filename, addr[0])
-    except:    
+        #start_new_thread(get_user_input, ("hello", 1))
+    elif data_p2p[0] == "P":    
         #global rcv_rfc_num
         filename = get_filename(rcv_rfc_num)
         Simple_FTP_receiver.rdt_recv(filename)
-        get_user_input("hello", 1)
+        start_new_thread(get_user_input, ("hello", 1))
             
     #print("P2P RESPONSE MESSAGE TYPE(DUMP): ", type(pickle.dumps(p2p_response_message(rfc_num))))
     #upload_socket.sendto(pickle.dumps(p2p_response_message(rfc_num)), addr)

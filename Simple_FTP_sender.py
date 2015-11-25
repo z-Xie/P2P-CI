@@ -107,6 +107,9 @@ def rdt_send(filename, rcv_host, N=3, MSS=100):
                 raise
             else:
                 continue
+    base = 0  #sequence number of the oldest unacknowledged packet
+    nextseqnum = 0  #the smallest unsend sequence number
+    sndpkt = []
     #print("Done!")
 
 if __name__ == "__main__":

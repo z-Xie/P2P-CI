@@ -183,6 +183,7 @@ def get_user_input(strr, i):
         s.send(data)
         server_data = s.recv(1024)
         print(server_data.decode('utf-8'), end="")
+        #print(server_data)
 
         new_data = pickle.loads(s.recv(1024))
         print_combined_list(new_data[0], new_data[1])
@@ -222,7 +223,7 @@ while True:
     data_p2p, addr = upload_socket.recvfrom(1024)
     data_p2p = pickle.loads(data_p2p)
     #print(data_p2p[0])
-    if data_p2p[0] == "G": #GET MSG
+    if data_p2p[0] == "G":
         indexP = data_p2p.index('P')
         indexC = data_p2p.index('C')
         rfc_num = data_p2p[indexC+1:indexP-1]
@@ -232,12 +233,11 @@ while True:
         upload_socket.sendto(pickle.dumps(message[0]),(addr))
         #print("SENDER ADDRESS:", addr[0])
         Simple_FTP_sender.rdt_send(filename, addr[0])
-        #start_new_thread(get_user_input, ("hello", 1))
-    elif data_p2p[0] == "P":    
+    elif data_p2p[0] == "P":   
         #global rcv_rfc_num
         filename = get_filename(rcv_rfc_num)
         Simple_FTP_receiver.rdt_recv(filename)
-        start_new_thread(get_user_input, ("hello", 1))
+        get_user_input("hello", 1)
             
     #print("P2P RESPONSE MESSAGE TYPE(DUMP): ", type(pickle.dumps(p2p_response_message(rfc_num))))
     #upload_socket.sendto(pickle.dumps(p2p_response_message(rfc_num)), addr)
