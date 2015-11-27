@@ -1,5 +1,3 @@
-#!/usr/bin/python           # This is server.py file
-
 import socket               # Import socket module
 import time					# Import time module
 import platform				# Import platform module to get our OS
@@ -11,7 +9,7 @@ host = socket.gethostname()  # Get local machine name
 port = 7734                  # Reserve a port for your service.
 s.bind(('', port))         # Bind to the port
 
-s.listen(5)                  # Now wait for client connection.
+s.listen(10)                  # Now wait for client connection.
 
 peer_list = []  # Global list of dictionaries for peers
 RFC_list = []   # Global list of dictionaries for RFCs
@@ -45,7 +43,7 @@ def p2s_lookup_response(rfc_num): # the parameter "rfc_num" should be str
         status = "200"
         phrase = "OK"
         message	= "P2P-CI11111/1.0 "+ status + " "+ phrase + "\n"
-        return response, message
+        return response, message  #response is a False or a list
 
 
 def p2s_lookup_response2(rfc_num): # the parameter "rfc_num" should be str
@@ -210,12 +208,12 @@ def client_thread(conn, addr):
                 p2s_add_response(conn, data[1], data[4], addr[0], data[3])  # Put server response message here
                 RFC_list = append_to_rfc_list(RFC_list, data[1], data[4], addr[0])
                 combined_list = append_to_combined_list(combined_list, data[1], data[4], addr[0], my_port)
-                print_dictionary(RFC_list, rfc_keys)
-            if data[2] == "0":
+                #print_dictionary(RFC_list, rfc_keys)
+            if data[2] == "0":   #GET
                 new_data = pickle.dumps(p2s_lookup_response(data[1]))
                 conn.send(new_data)
-            elif data[2] == "1":
-                print(p2s_lookup_response2(data[1]))
+            elif data[2] == "1":   #LOOKUP
+                #print(p2s_lookup_response2(data[1]))
                 new_data = pickle.dumps(p2s_lookup_response2(data[1]))
                 conn.send(new_data)
 
@@ -223,9 +221,6 @@ def client_thread(conn, addr):
     peer_list = delete_peers_dictionary(peer_list, addr[0])
     RFC_list = delete_rfcs_dictionary(RFC_list, addr[0])
     combined_list = delete_combined_dictionary(combined_list, addr[0])
-    #print_dictionary(peer_list, peer_keys)
-    #print_dictionary(RFC_list, rfc_keys)
-    #print_dictionary(combined_list, combined_keys)
     conn.close()
 while True:
     c, addr = s.accept()     # Establish connection with client.

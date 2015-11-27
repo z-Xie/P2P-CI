@@ -1,4 +1,3 @@
-#!/usr/bin/python           # This is client.py file
 import socket               # Import socket module
 import time                 # Import time module
 import platform             # Import platform module to get our OS
@@ -10,21 +9,25 @@ import threading
 import sys
 import Simple_FTP_receiver
 import Simple_FTP_sender
-#test
 
 rcv_rfc_num = ''  #record rfc_num for rdt_recv()
+rcv_rfc_title = ''
 
 def get_filename(rfc_num):
+    global rcv_rfc_title
     current_path = os.getcwd()
-    filename = "rfc"+str(rfc_num)+".txt"
-    m = filename.split()
-    filename = "".join(m)
     OS = platform.system()
     if OS == "Windows":  # determine rfc path for two different system
-        filename = current_path + "\\rfc\\" + filename
+        rfc_path = current_path + "\\rfc\\"
     else:
-        filename = current_path + "/rfc/" + filename
-    return filename
+        rfc_path = current_path + "/rfc/"
+    files = os.listdir(rfc_path)
+    m = rfc_num.split()
+    rfc_num = "".join(m)
+    for item in files:
+        if str(rfc_num) in item:
+            return rfc_path + item
+    return rfc_path + "rfc" + str(rfc_num) + ", " +str(rcv_rfc_title)+".pdf"
 
 def p2p_get_request(rfc_num, peer_host, peer_upload_port):
     global upload_socket
@@ -71,17 +74,6 @@ def p2p_response_message(rfc_num): # the parameter "rfc_num" should be str
 
     return message
 
-
-# send rfcs to peers
-def send_file(filename):  # send the RFC to peers
-    txt = open(filename)
-    data = txt.read(1024)
-    while data:
-        s.send(data)
-        data = txt.read(1024)
-    s.close()
-
-
 # display p2p request message
 def p2p_request_message(rfc_num, host):
     OS = platform.platform()
@@ -120,15 +112,19 @@ def p2s_list_request(host, port):
 #get the list of the local rfcs
 def get_local_rfcs():
     rfcs_path = os.getcwd() + "/rfc"
-    rfcs_num = [num[num.find("c")+1:num.find(".")] for num in os.listdir(rfcs_path) if 'rfc' in num]
+    rfcs_num = [num[num.find("c")+1:num.find(",")] for num in os.listdir(rfcs_path) if 'rfc' in num]
     return rfcs_num
 
+def get_local_rfcs_title():
+    rfcs_path = os.getcwd() + "/rfc"
+    rfcs_title = [title[title.find(" ")+1:title.find(".")] for title in os.listdir(rfcs_path) if 'rfc' in title]
+    return rfcs_title
 
 #pass peer's hostname, port number and rfc_num, rfc_title
 def peer_information():
     keys = ["RFC Number", "RFC Title"]
     rfcs_num = get_local_rfcs()
-    rfcs_title = get_local_rfcs()  # ["title1", "title2", "title3"] we use rfcs_num to fill in title
+    rfcs_title = get_local_rfcs_title() 
     for num, title in zip(rfcs_num, rfcs_title):
         entry = [num, title]
         dict_list_of_rfcs.insert(0, dict(zip(keys, entry)))
@@ -158,7 +154,6 @@ def print_combined_list(dictionary_list, keys):
         print(' '.join([item[key] for key in keys]))
 
 def get_user_input(strr, i):
-    #if key press, then close:
     user_input = input("> Enter ADD, LIST, LOOKUP, GET, or EXIT:  \n")
     if user_input == "EXIT":
         data = pickle.dumps("EXIT")
@@ -184,19 +179,21 @@ def get_user_input(strr, i):
         server_data = s.recv(1024)
         print(server_data.decode('utf-8'), end="")
 
-        new_data = pickle.loads(s.recv(1024))
+        new_data = pickle.loads(s.recv(1000000))
         print_combined_list(new_data[0], new_data[1])
 
         get_user_input("hello", 1)
     elif user_input == "GET":
         user_input_rfc_number = input("> Enter the RFC Number: ")
         user_input_rfc_title = input("> Enter the RFC Title: ")
+        global rcv_rfc_title
+        rcv_rfc_title = str(user_input_rfc_title)
         data = pickle.dumps(p2s_lookup_message(user_input_rfc_number, host, port, user_input_rfc_title, "0"))
         s.send(data)
         server_data = pickle.loads(s.recv(1024))
         if not server_data[0]:
             print(server_data[1])
-        else:
+        else:  
             p2p_get_request(str(user_input_rfc_number), server_data[0]["Hostname"], server_data[0]["Port Number"])
         #get_user_input("hello", 1)
     elif user_input == "LOOKUP":
@@ -237,11 +234,6 @@ while True:
         #global rcv_rfc_num
         filename = get_filename(rcv_rfc_num)
         Simple_FTP_receiver.rdt_recv(filename)
+        rcv_rfc_num = ''
+        rcv_rfc_title = ''
         start_new_thread(get_user_input, ("hello", 1))
-            
-    #print("P2P RESPONSE MESSAGE TYPE(DUMP): ", type(pickle.dumps(p2p_response_message(rfc_num))))
-    #upload_socket.sendto(pickle.dumps(p2p_response_message(rfc_num)), addr)
-
-# First we create new thread to handle upload listening event
-# and then process the user input event, it looks like to be parrallel
-# it works!

@@ -56,7 +56,7 @@ def timer(s,f):
     global port
     global sender
     global sndpkt
-    #print ("Timeout sequence number =", base)
+    print ("Timeout sequence number =", base)
     for i in range(base, nextseqnum):
         sender.sendto(sndpkt[i],(host, port))
 
