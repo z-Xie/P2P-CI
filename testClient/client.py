@@ -171,7 +171,7 @@ def get_user_input(strr, i):
         data = pickle.dumps(p2s_add_message(user_input_rfc_number, host, upload_port_num, user_input_rfc_title))
         s.send(data)
         server_data = s.recv(1024)
-        print(server_data.decode('utf-8'))
+        #print(server_data.decode('utf-8'))
         get_user_input("hello", 1)
     elif user_input == "LIST":
         data = pickle.dumps(p2s_list_request(host, port))
@@ -228,12 +228,18 @@ while True:
         #print("FILENAME: ", filename)
         upload_socket.sendto(pickle.dumps(message[0]),(addr))
         #print("SENDER ADDRESS:", addr[0])
-        Simple_FTP_sender.rdt_send(filename, addr[0])
+        n = sys.argv[1]
+        print("N = ", n)
+        mss = sys.argv[2]
+        print("MSS = ", mss)
+        Simple_FTP_sender.rdt_send(filename, addr[0], n, mss)
         #start_new_thread(get_user_input, ("hello", 1))
     elif data_p2p[0] == "P":    
         #global rcv_rfc_num
         filename = get_filename(rcv_rfc_num)
-        Simple_FTP_receiver.rdt_recv(filename)
+        prob_loss = sys.argv[3]
+        print("LOST PROB = ", prob_loss)
+        Simple_FTP_receiver.rdt_recv(filename, prob_loss)
         rcv_rfc_num = ''
         rcv_rfc_title = ''
         start_new_thread(get_user_input, ("hello", 1))

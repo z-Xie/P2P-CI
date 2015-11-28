@@ -36,8 +36,9 @@ def rdt_recv(filename, prob_loss=0.2):
         #print("data: ", data)
         seq_num, checksum, data_type, message = data[0], data[1], data[2], data[3]
         rand_loss = random.random()
-        if rand_loss <= prob_loss:
-            print("Packet loss, sequence number = ", seq_num)
+        if rand_loss <= float(prob_loss):
+            if seq_num == expectedseqnum:
+                print("Packet loss, sequence number = ", seq_num)
         else:
             if checksum != calculate_checksum(message):
                 print("DATA: ", data)

@@ -87,7 +87,7 @@ def rdt_send(filename, rcv_host, N=3, MSS=100):
     global nextseqnum
     #print("File Transfer Begins ...")
     while base < total_pkts:
-        while nextseqnum < min(base + N, total_pkts):
+        while nextseqnum < min(base + int(N), total_pkts):
             sender.sendto(sndpkt[nextseqnum],(rcv_host, port))
             if base == nextseqnum:
                 signal.setitimer(signal.ITIMER_REAL, TIMEOUT)
@@ -110,7 +110,7 @@ def rdt_send(filename, rcv_host, N=3, MSS=100):
     base = 0  #sequence number of the oldest unacknowledged packet
     nextseqnum = 0  #the smallest unsend sequence number
     sndpkt = []
-    #print("Done!")
+    print("Done!")
 
 if __name__ == "__main__":
     filename = "test_file.txt" #raw_input("Please enter filename: ")
