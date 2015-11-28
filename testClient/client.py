@@ -1,6 +1,6 @@
-import socket               # Import socket module
-import time                 # Import time module
-import platform             # Import platform module to get our OS
+import socket
+import time
+import platform
 import os
 import pickle
 import random
@@ -157,13 +157,8 @@ def get_user_input(strr, i):
     user_input = input("> Enter ADD, LIST, LOOKUP, GET, or EXIT:  \n")
     if user_input == "EXIT":
         data = pickle.dumps("EXIT")
-        #s.send(bytes('1', "utf-8"))
         s.send(data)
-        #stopped = threading.Event()
-        #time.sleep(3)
-        #threading.Timer(1, stopped.set).start()
         s.close                     # Close the socket when done
-        #sys.exit()
         os._exit(1)
     elif user_input == "ADD":
         user_input_rfc_number = input("> Enter the RFC Number: ")

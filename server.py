@@ -89,19 +89,7 @@ def search_combined_dict2(rfc_number):
 
 def p2s_list_response(conn):
     message = response_message("200")
-    #new_list = create_parsed_list_for_list_request()
-
     conn.send(bytes(message, 'utf-8'))
-
-
-def send_file(filename):  # send the RFC to peers
-    txt = open(filename)
-    data = txt.read(1024)
-    while data:
-        s.send(data)
-        data = txt.read(1024)
-    s.close()
-
 
 #Takes a list and appends a dictionary of hostname and port number
 def create_peer_list(dictionary_list, hostname, port):
@@ -153,13 +141,6 @@ def append_to_combined_list(dictionary_list, rfc_num, rfc_title, hostname, port)
     dictionary_list.insert(0, dict(zip(keys, entry)))
     return dictionary_list
 
-
-# Prints the list of dictionary items
-def print_dictionary(dictionary_list, keys):
-    for item in dictionary_list:
-        print(' '.join([item[key] for key in keys]))
-
-
 # Deletes the entries associated with the hostname
 def delete_peers_dictionary(dict_list_of_peers, hostname):
     dict_list_of_peers[:] = [d for d in dict_list_of_peers if d.get('Hostname') != hostname]
@@ -208,12 +189,10 @@ def client_thread(conn, addr):
                 p2s_add_response(conn, data[1], data[4], addr[0], data[3])  # Put server response message here
                 RFC_list = append_to_rfc_list(RFC_list, data[1], data[4], addr[0])
                 combined_list = append_to_combined_list(combined_list, data[1], data[4], addr[0], my_port)
-                #print_dictionary(RFC_list, rfc_keys)
             if data[2] == "0":   #GET
                 new_data = pickle.dumps(p2s_lookup_response(data[1]))
                 conn.send(new_data)
             elif data[2] == "1":   #LOOKUP
-                #print(p2s_lookup_response2(data[1]))
                 new_data = pickle.dumps(p2s_lookup_response2(data[1]))
                 conn.send(new_data)
 
