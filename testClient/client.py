@@ -15,13 +15,12 @@ rcv_rfc_title = ''
 
 def get_filename(rfc_num):
     global rcv_rfc_title
-    current_path = os.getcwd()
     OS = platform.system()
     if OS == "Windows":  # determine rfc path for two different system
-        rfc_path = current_path + "\\rfc\\"
+        rfc_path = "\\rfc\\"
     else:
-        rfc_path = current_path + "/rfc/"
-    files = os.listdir(rfc_path)
+        rfc_path = "/rfc/"
+    files = os.listdir(os.getcwd() + rfc_path)
     m = rfc_num.split()
     rfc_num = "".join(m)
     for item in files:
@@ -38,20 +37,10 @@ def p2p_get_request(rfc_num, peer_host, peer_upload_port):
     upload_socket.sendto(data,(peer_host, int(peer_upload_port)))
 
 # display p2p response message
-def p2p_response_message(rfc_num): # the parameter "rfc_num" should be str
-    filename = "rfc"+str(rfc_num)+".txt"
+def p2p_response_message(filename): # the parameter "rfc_num" should be str
     current_time = time.strftime("%a, %d %b %Y %X %Z", time.localtime())
     OS = platform.system()
-    m = filename.split()
-    filename = "".join(m)
-    current_path = os.getcwd()
-    if OS == "Windows":  # determine rfc path for two different system
-        filename = "rfc\\" + filename
-    else:
-        filename = "rfc/" + filename
-    #print (current_path+"/"+filename)
-    #print (os.path.exists(current_path+"/"+filename))
-    if os.path.exists(filename) == 0:
+    if os.path.exists(filename) == False:
         status = "404"
         phrase = "Not Found"
         message = "P2P-CI/1.0 "+ status + " "+ phrase + "\n"\
@@ -60,8 +49,6 @@ def p2p_response_message(rfc_num): # the parameter "rfc_num" should be str
     else:
         status = "200"
         phrase = "OK"
-        txt = open(filename)
-        data = txt.read()
         last_modified = time.ctime(os.path.getmtime(filename))
         content_length = os.path.getsize(filename)
         message = ["P2P-CI/1.0 "+ status + " "+ phrase + "\n"\
@@ -69,10 +56,10 @@ def p2p_response_message(rfc_num): # the parameter "rfc_num" should be str
                   "OS: " + str(OS)+"\n"\
                   "Last-Modified: " + last_modified + "\n"\
                   "Content-Length: " + str(content_length) + "\n"\
-                  "Content-Type: text/text \n", str(data)]
+                  "Content-Type: text/text \n"]
                   #+ str(data)
 
-    return message
+    return message, filename
 
 # display p2p request message
 def p2p_request_message(rfc_num, host):
@@ -188,6 +175,7 @@ def get_user_input(strr, i):
         server_data = pickle.loads(s.recv(1024))
         if not server_data[0]:
             print(server_data[1])
+            get_user_input("hello", 1)
         else:  
             p2p_get_request(str(user_input_rfc_number), server_data[0]["Hostname"], server_data[0]["Port Number"])
         #get_user_input("hello", 1)
@@ -213,28 +201,30 @@ start_new_thread(get_user_input, ("hello", 1))
 while True:
     data_p2p, addr = upload_socket.recvfrom(1024)
     data_p2p = pickle.loads(data_p2p)
-    #print(data_p2p[0])
+    print(data_p2p[1])
     if data_p2p[0] == "G": #GET MSG
         indexP = data_p2p.index('P')
         indexC = data_p2p.index('C')
         rfc_num = data_p2p[indexC+1:indexP-1]
-        message = p2p_response_message(rfc_num)
         filename = get_filename(rfc_num)
-        #print("FILENAME: ", filename)
-        upload_socket.sendto(pickle.dumps(message[0]),(addr))
+        print("FILENAME: ", filename)
+        message = p2p_response_message(filename)
+        upload_socket.sendto(pickle.dumps(message),(addr))
         #print("SENDER ADDRESS:", addr[0])
         n = sys.argv[1]
         print("N = ", n)
         mss = sys.argv[2]
         print("MSS = ", mss)
-        Simple_FTP_sender.rdt_send(filename, addr[0], n, mss)
+        Simple_FTP_sender.rdt_send(os.getcwd() + filename, addr[0], n, mss)
         #start_new_thread(get_user_input, ("hello", 1))
-    elif data_p2p[0] == "P":    
+    elif data_p2p[0][0][0] == "P":    
         #global rcv_rfc_num
-        filename = get_filename(rcv_rfc_num)
+        OS = platform.system()
+        filename = data_p2p[1]
+        print("FILENAME: ", filename)
         prob_loss = sys.argv[3]
         print("LOST PROB = ", prob_loss)
-        Simple_FTP_receiver.rdt_recv(filename, prob_loss)
+        Simple_FTP_receiver.rdt_recv(os.getcwd() + filename, prob_loss)
         rcv_rfc_num = ''
         rcv_rfc_title = ''
         start_new_thread(get_user_input, ("hello", 1))
