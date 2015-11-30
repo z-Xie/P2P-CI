@@ -201,13 +201,13 @@ start_new_thread(get_user_input, ("hello", 1))
 while True:
     data_p2p, addr = upload_socket.recvfrom(1024)
     data_p2p = pickle.loads(data_p2p)
-    print(data_p2p[1])
+    #print(data_p2p[0][0])
     if data_p2p[0] == "G": #GET MSG
         indexP = data_p2p.index('P')
         indexC = data_p2p.index('C')
         rfc_num = data_p2p[indexC+1:indexP-1]
         filename = get_filename(rfc_num)
-        print("FILENAME: ", filename)
+        #print("FILENAME: ", filename)
         message = p2p_response_message(filename)
         upload_socket.sendto(pickle.dumps(message),(addr))
         #print("SENDER ADDRESS:", addr[0])
@@ -217,11 +217,11 @@ while True:
         print("MSS = ", mss)
         Simple_FTP_sender.rdt_send(os.getcwd() + filename, addr[0], n, mss)
         #start_new_thread(get_user_input, ("hello", 1))
-    elif data_p2p[0][0][0] == "P":    
+    elif data_p2p[0][0] == "P":    
         #global rcv_rfc_num
         OS = platform.system()
         filename = data_p2p[1]
-        print("FILENAME: ", filename)
+        #print("FILENAME: ", filename)
         prob_loss = sys.argv[3]
         print("LOST PROB = ", prob_loss)
         Simple_FTP_receiver.rdt_recv(os.getcwd() + filename, prob_loss)
