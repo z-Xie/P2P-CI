@@ -129,7 +129,8 @@ host = socket.gethostname()  # Get local machine name
 #host = "10.139.62.163"
 port = 7734                  # Reserve a port for your service.
 s.connect((host, port))
-data = pickle.dumps(peer_information())  # send all the peer information to server
+#data = pickle.dumps(peer_information())  # send all the peer information to server
+data = pickle.dump(peer_information(), s.makefile("wb"))
 s.send(data)
 data = s.recv(1024)
 print(data.decode('utf-8'))
@@ -164,7 +165,8 @@ def get_user_input(strr, i):
         print(server_data.decode('utf-8'), end="")
         #print(server_data, end="")
 
-        new_data = pickle.loads(s.recv(1000000))
+        #new_data = pickle.loads(s.recv(1000000))
+        new_data = pickle.load(s.makefile("rb"))
         print_combined_list(new_data[0], new_data[1])
 
         get_user_input("hello", 1)

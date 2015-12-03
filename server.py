@@ -181,7 +181,8 @@ def client_thread(conn, addr):
     combined_list, combined_keys = create_combined_list(combined_list, data[1], addr[0], data[0])
 
     while True:
-        data = pickle.loads(conn.recv(4096))  # receive the[upload_port_num, rfcs_num, rfcs_title]
+        #data = pickle.loads(conn.recv(4096))  # receive the[upload_port_num, rfcs_num, rfcs_title]
+        data = pickle.load(conn.makefile("rb"))
         if data == "EXIT":
             break
         if data == "Bad Request":
@@ -193,9 +194,10 @@ def client_thread(conn, addr):
             print(data)
             p2s_list_response(conn)
             new_data = return_dict()
-            new_data = pickle.dumps(new_data)
+            #new_data = pickle.dumps(new_data)
+            new_data = pickle.dump(new_data, conn.makefile("wb"))
             #print(new_data)
-            conn.send(new_data)
+            #conn.send(new_data)
         else:
             if data[0][0] == "A":
                 print(data[0])
