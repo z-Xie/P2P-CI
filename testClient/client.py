@@ -32,7 +32,7 @@ def p2p_get_request(rfc_num, peer_host, peer_upload_port):
     global upload_socket
     global rcv_rfc_num
     rcv_rfc_num = rfc_num 
-    data = p2p_request_message(rfc_num, host)
+    data = p2p_request_message(rfc_num, socket.gethostname())
     data = pickle.dumps(data)
     upload_socket.sendto(data,(peer_host, int(peer_upload_port)))
 
@@ -152,13 +152,13 @@ def get_user_input(strr, i):
     elif user_input == "ADD":
         user_input_rfc_number = input("> Enter the RFC Number: ")
         user_input_rfc_title = input("> Enter the RFC Title: ")
-        data = pickle.dumps(p2s_add_message(user_input_rfc_number, host, upload_port_num, user_input_rfc_title))
+        data = pickle.dumps(p2s_add_message(user_input_rfc_number, socket.gethostname(), upload_port_num, user_input_rfc_title))
         s.send(data)
         server_data = s.recv(1024)
         print(server_data.decode('utf-8'))
         get_user_input("hello", 1)
     elif user_input == "LIST":
-        data = pickle.dumps(p2s_list_request(host, upload_port_num))
+        data = pickle.dumps(p2s_list_request(socket.gethostname(), upload_port_num))
         s.send(data)
         server_data = s.recv(1024)
         #server_data = pickle.loads(server_data)
@@ -187,7 +187,7 @@ def get_user_input(strr, i):
     elif user_input == "LOOKUP":
         user_input_rfc_number = input("> Enter the RFC Number: ")
         user_input_rfc_title = input("> Enter the RFC Title: ")
-        data = pickle.dumps(p2s_lookup_message(user_input_rfc_number, host, upload_port_num, user_input_rfc_title, "1"))
+        data = pickle.dumps(p2s_lookup_message(user_input_rfc_number, socket.gethostname(), upload_port_num, user_input_rfc_title, "1"))
         #print(p2s_lookup_message(user_input_rfc_number, host, port, user_input_rfc_title))
         #print(data)
         s.send(data)
