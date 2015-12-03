@@ -40,7 +40,7 @@ def p2p_get_request(rfc_num, peer_host, peer_upload_port):
 def p2p_response_message(filename): # the parameter "rfc_num" should be str
     current_time = time.strftime("%a, %d %b %Y %X %Z", time.localtime())
     OS = platform.system()
-    if os.path.exists(filename) == False:
+    if os.path.exists(os.getcwd()+filename) == False:
         status = "404"
         phrase = "Not Found"
         message = "P2P-CI/1.0 "+ status + " "+ phrase + "\n"\
@@ -49,8 +49,8 @@ def p2p_response_message(filename): # the parameter "rfc_num" should be str
     else:
         status = "200"
         phrase = "OK"
-        last_modified = time.ctime(os.path.getmtime(filename))
-        content_length = os.path.getsize(filename)
+        last_modified = time.ctime(os.path.getmtime(os.getcwd()+filename))
+        content_length = os.path.getsize(os.getcwd()+filename)
         message = ["P2P-CI/1.0 "+ status + " "+ phrase + "\n"\
                   "Date: " + current_time + "\n"\
                   "OS: " + str(OS)+"\n"\
@@ -217,6 +217,7 @@ while True:
         filename = get_filename(rfc_num)
         #print("FILENAME: ", filename)
         message = p2p_response_message(filename)
+        #print(message)
         upload_socket.sendto(pickle.dumps(message),(addr))
         #print("SENDER ADDRESS:", addr[0])
         n = sys.argv[1]
@@ -225,9 +226,9 @@ while True:
         print("MSS = ", mss)
         Simple_FTP_sender.rdt_send(os.getcwd() + filename, addr[0], n, mss)
         #start_new_thread(get_user_input, ("hello", 1))
-    elif data_p2p[0][0] == "P":    
+    elif data_p2p[0][0][0] == "P":    
         #global rcv_rfc_num
-        print(data_p2p[0])
+        print(data_p2p[0][0])
         OS = platform.system()
         filename = data_p2p[1]
         #print("FILENAME: ", filename)
