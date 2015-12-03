@@ -172,7 +172,7 @@ def client_thread(conn, addr):
     global peer_list, RFC_list, combined_list
     conn.send(bytes('Thank you for connecting', 'utf-8'))
     print('Got connection from ', addr)
-    data = pickle.loads(conn.recv(1024))  # receive the[upload_port_num, rfcs_num, rfcs_title]
+    data = pickle.loads(conn.recv(4096))  # receive the[upload_port_num, rfcs_num, rfcs_title]
     my_port = data[0]
     print('upload port number is : ', my_port)
     # Generate the peer list and RFC list
@@ -181,7 +181,7 @@ def client_thread(conn, addr):
     combined_list, combined_keys = create_combined_list(combined_list, data[1], addr[0], data[0])
 
     while True:
-        data = pickle.loads(conn.recv(1024))  # receive the[upload_port_num, rfcs_num, rfcs_title]
+        data = pickle.loads(conn.recv(4096))  # receive the[upload_port_num, rfcs_num, rfcs_title]
         if data == "EXIT":
             break
         if data == "Bad Request":
@@ -189,7 +189,7 @@ def client_thread(conn, addr):
             new_data = pickle.dumps(new_data)
             conn.send(new_data)
             continue
-        if data[0] == "L":
+        if type(data) == str:
             print(data)
             p2s_list_response(conn)
             new_data = return_dict()
