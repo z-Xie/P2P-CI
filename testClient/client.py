@@ -141,6 +141,7 @@ def print_combined_list(dictionary_list, keys):
         print(' '.join([item[key] for key in keys]))
 
 def get_user_input(strr, i):
+    global upload_port_num
     user_input = input("> Enter ADD, LIST, LOOKUP, GET, or EXIT:  \n")
     if user_input == "EXIT":
         data = pickle.dumps("EXIT")
@@ -153,13 +154,15 @@ def get_user_input(strr, i):
         data = pickle.dumps(p2s_add_message(user_input_rfc_number, host, upload_port_num, user_input_rfc_title))
         s.send(data)
         server_data = s.recv(1024)
-        #print(server_data.decode('utf-8'))
+        print(server_data.decode('utf-8'))
         get_user_input("hello", 1)
     elif user_input == "LIST":
-        data = pickle.dumps(p2s_list_request(host, port))
+        data = pickle.dumps(p2s_list_request(host, upload_port_num))
         s.send(data)
         server_data = s.recv(1024)
+        #server_data = pickle.loads(server_data)
         print(server_data.decode('utf-8'), end="")
+        #print(server_data, end="")
 
         new_data = pickle.loads(s.recv(1000000))
         print_combined_list(new_data[0], new_data[1])
@@ -182,7 +185,7 @@ def get_user_input(strr, i):
     elif user_input == "LOOKUP":
         user_input_rfc_number = input("> Enter the RFC Number: ")
         user_input_rfc_title = input("> Enter the RFC Title: ")
-        data = pickle.dumps(p2s_lookup_message(user_input_rfc_number, host, port, user_input_rfc_title, "1"))
+        data = pickle.dumps(p2s_lookup_message(user_input_rfc_number, host, upload_port_num, user_input_rfc_title, "1"))
         #print(p2s_lookup_message(user_input_rfc_number, host, port, user_input_rfc_title))
         #print(data)
         s.send(data)
@@ -194,6 +197,10 @@ def get_user_input(strr, i):
         print_combined_list(server_data[0], keys)
         get_user_input("hello", 1)
     else:
+        data = pickle.dumps("Bad Request")
+        s.send(data)
+        server_data = pickle.loads(s.recv(1024))
+        print(server_data)
         get_user_input("hello", 1)
 
 start_new_thread(get_user_input, ("hello", 1))
@@ -203,6 +210,7 @@ while True:
     data_p2p = pickle.loads(data_p2p)
     #print(data_p2p[0][0])
     if data_p2p[0] == "G": #GET MSG
+        print(data_p2p)
         indexP = data_p2p.index('P')
         indexC = data_p2p.index('C')
         rfc_num = data_p2p[indexC+1:indexP-1]
@@ -219,6 +227,7 @@ while True:
         #start_new_thread(get_user_input, ("hello", 1))
     elif data_p2p[0][0] == "P":    
         #global rcv_rfc_num
+        print(data_p2p[0])
         OS = platform.system()
         filename = data_p2p[1]
         #print("FILENAME: ", filename)

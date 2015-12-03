@@ -4,6 +4,7 @@ import platform				# Import platform module to get our OS
 from _thread import *
 import pickle
 
+
 s = socket.socket()# Create a socket object
 host = socket.gethostname()  # Get local machine name
 port = 7734                  # Reserve a port for your service.
@@ -28,6 +29,7 @@ def response_message(status):
 
 
 # P2S response message from the server
+
 def p2s_lookup_response(rfc_num): # the parameter "rfc_num" should be str
     current_time = time.strftime("%a, %d %b %Y %X %Z", time.localtime())
     OS = platform.platform()
@@ -35,14 +37,14 @@ def p2s_lookup_response(rfc_num): # the parameter "rfc_num" should be str
     if not response:
         status = "404"
         phrase = "Not Found"
-        message= "P2P-CI1111/1.0 "+ status + " "+ phrase + "\n"\
+        message= "P2P-CI/1.0 "+ status + " "+ phrase + "\n"\
                  "Date: " + current_time + "\n"\
                  "OS: "+str(OS)+"\n"
         return response, message
     else:
         status = "200"
         phrase = "OK"
-        message	= "P2P-CI11111/1.0 "+ status + " "+ phrase + "\n"
+        message	= "P2P-CI/1.0 "+ status + " "+ phrase + "\n"
         return response, message  #response is a False or a list
 
 
@@ -61,7 +63,7 @@ def p2s_lookup_response2(rfc_num): # the parameter "rfc_num" should be str
     else:
         status = "200"
         phrase = "OK"
-        message	= "P2P-CI11111/1.0 "+ status + " "+ phrase + "\n"
+        message	= "P2P-CI/1.0 "+ status + " "+ phrase + "\n"
         return response, message
 
 
@@ -89,6 +91,8 @@ def search_combined_dict2(rfc_number):
 
 def p2s_list_response(conn):
     message = response_message("200")
+    #conn.send(bytes(message, 'utf-8'))
+    #conn.send(message.encode('utf-8').strip())
     conn.send(bytes(message, 'utf-8'))
 
 #Takes a list and appends a dictionary of hostname and port number
@@ -180,12 +184,21 @@ def client_thread(conn, addr):
         data = pickle.loads(conn.recv(1024))  # receive the[upload_port_num, rfcs_num, rfcs_title]
         if data == "EXIT":
             break
-        if type(data) == str:
+        if data == "Bad Request":
+            new_data = response_message("400")
+            new_data = pickle.dumps(new_data)
+            conn.send(new_data)
+            continue
+        if data[0] == "L":
+            print(data)
             p2s_list_response(conn)
-            new_data = pickle.dumps(return_dict())
+            new_data = return_dict()
+            new_data = pickle.dumps(new_data)
+            #print(new_data)
             conn.send(new_data)
         else:
             if data[0][0] == "A":
+                print(data[0])
                 p2s_add_response(conn, data[1], data[4], addr[0], data[3])  # Put server response message here
                 RFC_list = append_to_rfc_list(RFC_list, data[1], data[4], addr[0])
                 combined_list = append_to_combined_list(combined_list, data[1], data[4], addr[0], my_port)
@@ -193,6 +206,7 @@ def client_thread(conn, addr):
                 new_data = pickle.dumps(p2s_lookup_response(data[1]))
                 conn.send(new_data)
             elif data[2] == "1":   #LOOKUP
+                print(data[0])
                 new_data = pickle.dumps(p2s_lookup_response2(data[1]))
                 conn.send(new_data)
 
