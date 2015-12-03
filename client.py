@@ -131,7 +131,7 @@ port = 7734                  # Reserve a port for your service.
 s.connect((host, port))
 #data = pickle.dumps(peer_information())  # send all the peer information to server
 data = pickle.dump(peer_information(), s.makefile("wb"))
-s.send(data)
+#s.send(data)
 data = s.recv(1024)
 print(data.decode('utf-8'))
 s.close
